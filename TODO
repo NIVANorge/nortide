@@ -1,0 +1,7 @@
+# TODO and Planned features
+
+* Make sure the package works for both Python2 and Python3 (currently it requires Python3)
+
+* Caching of queries to speed up and protect API
+Internal cashe both on location and time.
+Not high priority.

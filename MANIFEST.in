@@ -1,0 +1,5 @@
+# Include the license file
+include LICENSE
+
+# To include data files uncomment line bellow
+# recursive-include data *
