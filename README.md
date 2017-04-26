@@ -22,9 +22,15 @@ you should throttle your queries.
 
 
 ## Install
-Written and tested in Python 3.6
+Written for Python3 and tested with Python2.7
 
-TODO: Write install script for use with pip and document the use of this
+Install with pip from repository:
+```
+>> pip install https://github.com/NIVANorge/nortide/zipball/master
+```
+
+Or download module [nortide_test.py](./nortide_test.py) and put it
+in your `PYTHONPATH`.
 
 
 ## Testing
@@ -33,6 +39,11 @@ with unit tests for the package.
 To run the test do:
 ```
 >> python nortide_test.py
+```
+
+The test package can also be tested with the setuptools `setup.py` script:
+```
+>> python setup.py test
 ```
 
 
