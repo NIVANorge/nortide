@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# coding=utf-8
 # -*- coding: utf-8 -*-
 '''
 Python API to download tidal data for the Norwegian coast using
