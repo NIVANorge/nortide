@@ -15,17 +15,26 @@ See https://github.com/hay/xml2json
 2017-04-25
 Grunde Løvoll, grunde.loevoll@niva.no
 '''
-import logging
+
+from __future__ import division, unicode_literals
+
+# import logging
 import requests as rq
 import pandas as pd
-import xml.etree.cElementTree as ET
+import xml.etree.ElementTree as ET
 from collections import OrderedDict, namedtuple
 import json
 import re
 from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
+import time
 from dateutil.parser import parse as dt_parse
+
+try:
+    basestring
+except:
+    basestring = str # Python3 compatibility
 
 
 api_url = "http://api.sehavniva.no/tideapi.php"
@@ -108,6 +117,16 @@ def _elem_to_internal(elem, strip_ns=1, strip=1):
     return {elem_tag: d}
 
 
+def _ts_localize(ts, tz=tz_norway):
+    '''Helper to localize un-localized time-stamps for
+    Python2 compatibility'''
+    assert(isinstance(ts, datetime))
+    if ts.tzinfo is None:
+        return tz.localize(ts)
+    else:
+        return ts.astimezone(tz)
+
+
 class TidalExcept(Exception):
     '''For exeptions raised by this module'''
     pass
@@ -156,7 +175,7 @@ class Station(object):
                   'refcode': refcode}
 
         r = rq.get(self.url, params=params)
-        levels = ET.fromstring(r.text)
+        levels = ET.fromstring(r.text.encode('utf8'))
         levels = _elem_to_internal(levels)
         try:
             levels = levels['tide']['locationlevel']
@@ -205,7 +224,7 @@ class Tidal(object):
 
         # do request, parse xml, and create Station instances
         r = rq.get(self.url, params=params)
-        elem = ET.fromstring(r.text)
+        elem = ET.fromstring(r.text.encode('utf8'))
         stations = _elem_to_internal(elem)
         stations = stations['tide']['stationinfo']['location']
         self._stations = [Station(url=self.url, **sd) for sd in stations]
@@ -277,16 +296,18 @@ class Tidal(object):
             start_time = end_time - timedelta(1)
 
         # Note that the API assumes all queried times are in utc+1 time
-        if isinstance(start_time, str):
+        if isinstance(start_time, basestring):
             start_time = dt_parse(start_time)        
-        assert(isinstance(start_time, datetime))
-        start_time = start_time.astimezone(tz_norway)
+        # assert(isinstance(start_time, datetime))
+        start_time = _ts_localize(start_time, tz_norway)
+        # start_time.astimezone(tz_norway)
         start_time_str = start_time.isoformat()
         
-        if isinstance(end_time, str):
+        if isinstance(end_time, basestring):
             end_time = dt_parse(end_time)
-        assert(isinstance(end_time, datetime))
-        end_time_str = end_time.astimezone(tz_norway)
+        end_time = _ts_localize(end_time, tz_norway)
+        # assert(isinstance(end_time, datetime))
+        # end_time_str = end_time.astimezone(tz_norway)
         end_time_str = end_time.isoformat()
         
         params = {'tide_request': 'locationdata',
@@ -302,7 +323,7 @@ class Tidal(object):
                   # 'tzone': 0
                   }
         r = rq.get(self.url, params=params)
-        data = ET.fromstring(r.text)
+        data = ET.fromstring(r.text.encode('utf8'))
         data = _elem_to_internal(data)
         try:
             data = data['tide']['locationdata']
@@ -375,12 +396,12 @@ class Tidal(object):
 
         Warning: if abused Kartverket will block your IP for a while...
         '''
-        if isinstance(time_stamp, str):
+        if isinstance(time_stamp, basestring):
             # Parse timestamp and convert to datetime object
             time_stamp = dt_parse(time_stamp)
 
         # convert time-stamp to tz_norway
-        time_stamp = time_stamp.astimezone(tz_norway)
+        time_stamp = _ts_localize(time_stamp, tz_norway) # time_stamp.astimezone(tz_norway)
 
         td = timedelta(0, 3 * 60 * 60) # 3-hour before and after in query
         start_time = time_stamp - td
@@ -389,7 +410,12 @@ class Tidal(object):
                                        lon=lon, lat=lat, refcode="CD",
                                        datatype='OBS', interval=10, **kwargs)
         # Force time to UTC time to ebable subtraction from adj_data.index
-        time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
+        try:
+            # Python3
+            time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
+        except:
+            # Python2
+            time_stamp = time_stamp.utcfromtimestamp(time.mktime(time_stamp.timetuple()))
         # find nearest points in time compared to time_stamp
         t_dist = abs((adj_data.index - time_stamp).total_seconds())
         adj_data = adj_data.iloc[t_dist.argsort()[:2]]
@@ -398,7 +424,7 @@ class Tidal(object):
         y = adj_data.ix[:, 'value']
         t = adj_data.index
         value = y[0] + (time_stamp - t[0]).total_seconds() * ((y[1] - y[0])/
-                                                              (t[1] - t[0]).total_seconds())
+                        (t[1] - t[0]).total_seconds())
         return(WaterLevelData(value, adj_data.ix[0, 'type']))
 
 
@@ -410,7 +436,7 @@ class Tidal(object):
             return(self._languages)
         params = {'tide_request': 'languages'}
         r = rq.get(self.url, params=params)
-        lan_list = ET.fromstring(r.text)
+        lan_list = ET.fromstring(r.text.encode('utf8'))
         lan_list = _elem_to_internal(lan_list)
         lan_list = lan_list['tide']['languages']['lang']
         self._languages = [LangCode(l['@code'], l['@name']) for l in lan_list]
@@ -425,7 +451,7 @@ class Tidal(object):
                   'lon': lon}
 
         r = rq.get(self.url, params=params)
-        ref_levels = ET.fromstring(r.text)
+        ref_levels = ET.fromstring(r.text.encode('utf8'))
         ref_levels = _elem_to_internal(ref_levels)
         ref_levels = ref_levels['tide']['standardlevels']['reflevel']
         ref_levels = [RefLevel(l['@code'], l['@name'], l['@descr']) for l in ref_levels]

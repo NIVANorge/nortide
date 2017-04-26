@@ -12,6 +12,7 @@ working as it should.
 2017-04-24
 Grunde Løvoll, grunde.loevoll@niva.no
 '''
+from __future__ import division, unicode_literals
 import nortide
 import unittest
 
@@ -54,13 +55,13 @@ class TestNortide(unittest.TestCase):
                                         lat=59.535033, lon=10.554628, datatype='PRE')
         self.assertTrue(test_data.shape[1] == 4)
         self.assertTrue(test_data.shape[0] == 73)
-        self.assertAlmostEqual(test_data.iloc[3,0], 59.9, 1)
+        self.assertAlmostEqual(test_data.ix[3,'value'], 59.9, 1)
 
 
     def test_get_waterlevel(self):
         test_data = self.tidal.get_waterlevel("2016-02-08T10:14:04.432",
                                               lat=59.535033, lon=10.554628)
-        self.assertAlmostEqual(test_data.data, 67.396306, 4)
+        self.assertAlmostEqual(test_data.data, 67.396306, 3)
 
 
     def test_get_languages(self):
@@ -82,6 +83,8 @@ class TestNortide(unittest.TestCase):
         self.assertRaises(nortide.TidalExcept, self.tidal.get_waterlevel, 
                           '2015-10-10T09:13:14.32', lat=62.2984, lon=9.2422)
  
+def run_test():
+    unittest.main()
 
 if __name__ == '__main__':
     unittest.main()
