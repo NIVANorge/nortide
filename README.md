@@ -8,7 +8,7 @@ The wrapper can also return tabular data as Pandas DataFrames
 which are convenient for data analytics and export to
 various formats (like csv, Excel and HDF5).
 
-For more information about the API see: [http://api.sehavniva.no/tideapi_no.html]
+For more information about the API see: [http://api.sehavniva.no/tideapi_no.html](http://api.sehavniva.no/tideapi_no.html)
 
 
 ## beware of!
