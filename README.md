@@ -29,7 +29,7 @@ Install with pip from repository:
 >> pip install https://github.com/NIVANorge/nortide/zipball/master
 ```
 
-Or download module [nortide_test.py](./nortide_test.py) and put it
+Or download module [nortide.py](./nortide.py) and put it
 in your `PYTHONPATH`.
 
 

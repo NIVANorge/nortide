@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A setuptools setup for module.
+"""A setuptools setup for nortide module.
 
 For more information on setuptools see:
 https://packaging.python.org/en/latest/distributing.html
