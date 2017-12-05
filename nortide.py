@@ -39,7 +39,7 @@ except:
 
 api_url = "http://api.sehavniva.no/tideapi.php"
 
-WaterLevelData = namedtuple('WaterLevelData', 'data, data_type')
+WaterLevelData = namedtuple('WaterLevelData', 'data, data_type, refcode')
 RefLevel = namedtuple('RefLevel', 'code, name, descr')
 
 # The sehavniva.no API assumes timestamps are in this timezone
@@ -275,7 +275,7 @@ class Tidal(object):
                               will be returned
         refcode    -- code of reference level, the zero level in the response.
                       Any existing level of the area may be used returned.
-                      (default MSL mean sea level)
+                      (default 'CD' = sea map zero (sjoekartnull))
                       For a list of av available refcodes at a location use
                       the get_ref_levels() method
         interval   -- time interval of returned values in minutes [10, 60] (default 60)
@@ -390,9 +390,10 @@ class Tidal(object):
         '''Method which gives a single water level data point for a given
         time-stamp.
 
-        Note that Kartverket returns data in 10 min intervals, the retured value is
+        Note that Kartverket returns data in 10 min intervals, the returned value is
         thus a linear interpolation in time between the two nearest data-points
-        returned. 
+        returned. The return value is in cm higher than the reference level, and
+        it is rounded off to the nearest cm.
 
         Warning: if abused Kartverket will block your IP for a while...
         '''
@@ -407,8 +408,8 @@ class Tidal(object):
         start_time = time_stamp - td
         end_time = time_stamp + td # timedelta(0, 60 * 60) # 1-hour after
         adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
-                                       lon=lon, lat=lat, refcode="CD",
-                                       datatype='OBS', interval=10, **kwargs)
+                                       lon=lon, lat=lat, refcode=refcode,
+                                       datatype=datatype, interval=10, **kwargs)
         # Force time to UTC time to ebable subtraction from adj_data.index
         try:
             # Python3
@@ -425,7 +426,8 @@ class Tidal(object):
         t = adj_data.index
         value = y[0] + (time_stamp - t[0]).total_seconds() * ((y[1] - y[0])/
                         (t[1] - t[0]).total_seconds())
-        return(WaterLevelData(value, adj_data.ix[0, 'type']))
+        value = round(value) # Round of to nearest cm
+        return(WaterLevelData(value, adj_data.ix[0, 'type'], refcode))
 
 
     @property
