@@ -403,20 +403,14 @@ class Tidal(object):
 
         # convert time-stamp to tz_norway
         time_stamp = _ts_localize(time_stamp, tz_norway) # time_stamp.astimezone(tz_norway)
-        
+
         td = timedelta(0, 3 * 60 * 60) # 3-hour before and after in query
         start_time = time_stamp - td
         end_time = time_stamp + td # timedelta(0, 60 * 60) # 1-hour after
         adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
                                        lon=lon, lat=lat, refcode=refcode,
                                        datatype=datatype, interval=10, **kwargs)
-        # Force time to UTC time to ebable subtraction from adj_data.index
-        try:
-            # Python3
-            time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
-        except:
-            # Python2
-            time_stamp = time_stamp.utcfromtimestamp(time.mktime(time_stamp.timetuple()))
+
         # find nearest points in time compared to time_stamp
         t_dist = abs((adj_data.index - time_stamp).total_seconds())
         adj_data = adj_data.iloc[t_dist.argsort()[:2]]
