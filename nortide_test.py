@@ -55,7 +55,7 @@ class TestNortide(unittest.TestCase):
                                         lat=59.535033, lon=10.554628, datatype='PRE')
         self.assertTrue(test_data.shape[1] == 4)
         self.assertTrue(test_data.shape[0] == 73)
-        self.assertAlmostEqual(test_data.ix[3,'value'], 59.9, 1)
+        self.assertAlmostEqual(test_data.iloc[3,test_data.columns.get_loc('value')], 59.9, 1)
 
 
     def test_get_waterlevel(self):

@@ -294,7 +294,7 @@ class Tidal(object):
         if not all((start_time, end_time)):
             end_time = datetime.utcnow().astimezone(tz_norway)
             start_time = end_time - timedelta(1)
-
+        
         # Note that the API assumes all queried times are in utc+1 time
         if isinstance(start_time, basestring):
             start_time = dt_parse(start_time)        
@@ -378,10 +378,10 @@ class Tidal(object):
         out_data.columns = [re.sub(r'^[@|#]', '', str(c)).lower() for c in out_data.columns]
         out_data.value = pd.to_numeric(out_data.value)
         if datatype != 'ALL':
-            out_data.index = pd.DatetimeIndex(out_data.ix[:, 'time'])
+            out_data.index = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(tz_norway)
             out_data.rename(columns={'time': 'time_orig'}, inplace=True)
         else:
-            out_data.time = pd.DatetimeIndex(out_data.ix[:, 'time'])
+            out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(tz_norway)
         return(out_data)
 
 
@@ -403,7 +403,7 @@ class Tidal(object):
 
         # convert time-stamp to tz_norway
         time_stamp = _ts_localize(time_stamp, tz_norway) # time_stamp.astimezone(tz_norway)
-
+        
         td = timedelta(0, 3 * 60 * 60) # 3-hour before and after in query
         start_time = time_stamp - td
         end_time = time_stamp + td # timedelta(0, 60 * 60) # 1-hour after
@@ -422,12 +422,12 @@ class Tidal(object):
         adj_data = adj_data.iloc[t_dist.argsort()[:2]]
 
         # Interpolate and return the data
-        y = adj_data.ix[:, 'value']
+        y = adj_data.loc[:, 'value']
         t = adj_data.index
         value = y[0] + (time_stamp - t[0]).total_seconds() * ((y[1] - y[0])/
                         (t[1] - t[0]).total_seconds())
         value = round(value) # Round of to nearest cm
-        return(WaterLevelData(value, adj_data.ix[0, 'type'], refcode))
+        return(WaterLevelData(value, adj_data.iloc[0, adj_data.columns.get_loc('type')], refcode))
 
 
     @property
