@@ -32,7 +32,7 @@ class TestNortide(unittest.TestCase):
     def test_station_list(self):
         station_list = self.tidal.stations
         self.assertTrue("anx" in [s.code.lower() for s in station_list]) # Station Andenes
-        self.assertTrue(len(station_list) >= 26) # Assume that stations wont be removed
+        self.assertTrue(len(station_list) >= 25) # Assume that stations wont be removed
 
 
     def test_get_station(self):
