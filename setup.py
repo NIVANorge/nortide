@@ -44,7 +44,7 @@ setup(
     keywords='waterlevel tide development marine',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     # py_modules=["nortide"],
-    install_requires=['requests', 'pandas'],
+    install_requires=['requests==2.24.0', 'pandas==1.2.4'],
     # entry_points={
     #     'console_scripts': [
     #         'nortide=nortide:main', # MUST implement this, also add test-script?
