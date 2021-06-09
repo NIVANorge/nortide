@@ -20,7 +20,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='nortide',
-    version='0.1',
+    version='0.2',
     description='Python module for interfacing with the http://api.sehavniva.no/ API',
     long_description=long_description,
     url='https://github.com/NIVANorge/nortide',
@@ -44,7 +44,7 @@ setup(
     keywords='waterlevel tide development marine',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     # py_modules=["nortide"],
-    install_requires=['requests', 'pandas'],
+    install_requires=['requests==2.24.0', 'pandas==1.2.4'],
     # entry_points={
     #     'console_scripts': [
     #         'nortide=nortide:main', # MUST implement this, also add test-script?
