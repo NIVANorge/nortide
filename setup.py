@@ -20,7 +20,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='nortide',
-    version='0.1',
+    version='0.2',
     description='Python module for interfacing with the http://api.sehavniva.no/ API',
     long_description=long_description,
     url='https://github.com/NIVANorge/nortide',
