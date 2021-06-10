@@ -378,10 +378,10 @@ class Tidal(object):
         out_data.columns = [re.sub(r'^[@|#]', '', str(c)).lower() for c in out_data.columns]
         out_data.value = pd.to_numeric(out_data.value)
         if datatype != 'ALL':
-            out_data.index = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(tz_norway)
+            out_data.index = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(None)
             out_data.rename(columns={'time': 'time_orig'}, inplace=True)
         else:
-            out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(tz_norway)
+            out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(None)
         return(out_data)
 
 
@@ -411,6 +411,7 @@ class Tidal(object):
                                        lon=lon, lat=lat, refcode=refcode,
                                        datatype=datatype, interval=10, **kwargs)
 
+        time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
         # find nearest points in time compared to time_stamp
         t_dist = abs((adj_data.index - time_stamp).total_seconds())
         adj_data = adj_data.iloc[t_dist.argsort()[:2]]
