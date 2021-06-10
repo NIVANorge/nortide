@@ -15,7 +15,7 @@ Grunde Løvoll, grunde.loevoll@niva.no
 from __future__ import division, unicode_literals
 import nortide
 import unittest
-
+from tempfile import TemporaryFile
 
 # Unit tests
 class TestNortide(unittest.TestCase):
@@ -83,6 +83,15 @@ class TestNortide(unittest.TestCase):
         # Trying to fetch data from Lesja which should result in an error
         self.assertRaises(nortide.TidalExcept, self.tidal.get_waterlevel, 
                           '2015-10-10T09:13:14.32', lat=62.2984, lon=9.2422)
+    
+    def test_dump_excel(self):
+
+        test_data = self.tidal.waterlevel_df(start_time='2017-01-01', end_time='2017-01-04',
+                                        lat=59.535033, lon=10.554628, datatype='PRE')
+        
+        with TemporaryFile("wb") as f:
+            test_data.to_excel(f)
+
  
 def run_test():
     unittest.main()
