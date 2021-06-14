@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Small script to adjust depth measurement from tidal data
+Small script to adjust depth measurement from tidal data. Use python water_level_adjust.py --help for options. Example of use: python water_level_adjust.py infile.xlsx outfile.xlsx --date Date --time Time --longitude Lon --latitude Lat -d Depth
 '''
 import logging
 import pandas as pd
