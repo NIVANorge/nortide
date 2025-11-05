@@ -37,7 +37,7 @@ except:
     basestring = str # Python3 compatibility
 
 
-api_url = "http://api.sehavniva.no/tideapi.php"
+api_url = "https://vannstand.kartverket.no/tideapi.php"
 
 WaterLevelData = namedtuple('WaterLevelData', 'data, data_type, refcode')
 RefLevel = namedtuple('RefLevel', 'code, name, descr')
