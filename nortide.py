@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
 import time
+import math
 from dateutil.parser import parse as dt_parse
 
 try:
@@ -126,6 +127,25 @@ def _ts_localize(ts, tz=tz_norway):
     else:
         return ts.astimezone(tz)
 
+
+def _haversine(lat1, lon1, lat2, lon2):
+    R = 6371.0 # in km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1))*math.cos(math.radians(lat2))*math.sin(dlon/2)**2
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+def find_closest_station(lat, lon, stations):
+  
+    closest_station = None
+    closest_distance = float('inf')
+    for s in stations:
+        d = _haversine(lat, lon, s.latitude, s.longitude)
+        if d < closest_distance:
+            closest_distance = d
+            closest_station = s
+    return closest_station, closest_distance
 
 class TidalExcept(Exception):
     '''For exeptions raised by this module'''
@@ -386,9 +406,12 @@ class Tidal(object):
 
 
 
-    def get_waterlevel(self, time_stamp, lon, lat, refcode="CD", datatype="OBS", **kwargs):
+    def get_waterlevel(self, time_stamp, lon, lat, refcode="CD", datatype="OBS", fallback_station_distance=0, **kwargs):
         '''Method which gives a single water level data point for a given
         time-stamp.
+
+        fallback_station_distance will try to use the closest station within the given
+        distance(km) if no data is found for the given lon, lat position.
 
         Note that Kartverket returns data in 10 min intervals, the returned value is
         thus a linear interpolation in time between the two nearest data-points
@@ -407,9 +430,24 @@ class Tidal(object):
         td = timedelta(0, 3 * 60 * 60) # 3-hour before and after in query
         start_time = time_stamp - td
         end_time = time_stamp + td # timedelta(0, 60 * 60) # 1-hour after
-        adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
+
+        try:
+            adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
                                        lon=lon, lat=lat, refcode=refcode,
                                        datatype=datatype, interval=10, **kwargs)
+        except TidalExcept as e:
+            if fallback_station_distance > 0:
+                # Find closest station and try again
+                stations = self.stations
+                closest_station, distance = find_closest_station(lat, lon, stations)
+                if distance > fallback_station_distance:
+                    raise TidalExcept(f"No station within {fallback_station_distance} km") from e
+                adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
+                                       station=closest_station, refcode=refcode,
+                                       datatype=datatype, interval=10, **kwargs)
+                print(f"Using closest station {closest_station.name} ({lat}, {lon}) at distance {distance:.1f} km")
+            else:
+                raise e
 
         time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
         # find nearest points in time compared to time_stamp
