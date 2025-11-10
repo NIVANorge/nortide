@@ -117,16 +117,13 @@ def _elem_to_internal(elem, strip_ns=1, strip=1):
         d = text or None
     return {elem_tag: d}
 
-
 def _ts_localize(ts, tz=tz_norway):
-    '''Helper to localize un-localized time-stamps for
-    Python2 compatibility'''
+
     assert(isinstance(ts, datetime))
     if ts.tzinfo is None:
         return tz.localize(ts)
     else:
         return ts.astimezone(tz)
-
 
 def _haversine(lat1, lon1, lat2, lon2):
     R = 6371.0 # in km
@@ -146,6 +143,7 @@ def find_closest_station(lat, lon, stations):
             closest_distance = d
             closest_station = s
     return closest_station, closest_distance
+
 
 class TidalExcept(Exception):
     '''For exeptions raised by this module'''
@@ -402,7 +400,7 @@ class Tidal(object):
             out_data.rename(columns={'time': 'time_orig'}, inplace=True)
         else:
             out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(None)
-        return(out_data)
+        return out_data
 
 
 
@@ -423,10 +421,7 @@ class Tidal(object):
         if isinstance(time_stamp, basestring):
             # Parse timestamp and convert to datetime object
             time_stamp = dt_parse(time_stamp)
-
-        # convert time-stamp to tz_norway
-        time_stamp = _ts_localize(time_stamp, tz_norway) # time_stamp.astimezone(tz_norway)
-
+        time_stamp = _ts_localize(time_stamp, tz_norway)
         td = timedelta(0, 3 * 60 * 60) # 3-hour before and after in query
         start_time = time_stamp - td
         end_time = time_stamp + td # timedelta(0, 60 * 60) # 1-hour after
@@ -445,11 +440,11 @@ class Tidal(object):
                 adj_data = self.waterlevel_df(start_time=start_time, end_time=end_time,
                                        station=closest_station, refcode=refcode,
                                        datatype=datatype, interval=10, **kwargs)
-                print(f"Using closest station {closest_station.name} ({lat}, {lon}) at distance {distance:.1f} km")
+                print(f"Using station {closest_station.name} ({lat}, {lon}) {distance:.1f} km away")
             else:
                 raise e
 
-        time_stamp = time_stamp.utcfromtimestamp(time_stamp.timestamp())
+        time_stamp = time_stamp.replace(tzinfo=None) # make naive for comparison
         # find nearest points in time compared to time_stamp
         t_dist = abs((adj_data.index - time_stamp).total_seconds())
         adj_data = adj_data.iloc[t_dist.argsort()[:2]]
@@ -457,7 +452,8 @@ class Tidal(object):
         # Interpolate and return the data
         y = adj_data.loc[:, 'value']
         t = adj_data.index
-        value = y[0] + (time_stamp - t[0]).total_seconds() * ((y[1] - y[0])/
+ 
+        value = y.iloc[0] + (time_stamp - t[0]).total_seconds() * ((y.iloc[1] - y.iloc[0])/
                         (t[1] - t[0]).total_seconds())
         value = round(value) # Round of to nearest cm
         return(WaterLevelData(value, adj_data.iloc[0, adj_data.columns.get_loc('type')], refcode))

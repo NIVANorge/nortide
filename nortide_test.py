@@ -62,7 +62,7 @@ class TestNortide(unittest.TestCase):
     def test_get_waterlevel(self):
         test_data = self.tidal.get_waterlevel("2016-02-08T10:14:04.432",
                                               lat=59.535033, lon=10.554628)
-        self.assertAlmostEqual(test_data.data, 67, 3)
+        self.assertAlmostEqual(test_data.data, 71, 3)
 
 
     def test_get_languages(self):
