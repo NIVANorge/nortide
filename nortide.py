@@ -396,10 +396,10 @@ class Tidal(object):
         out_data.columns = [re.sub(r'^[@|#]', '', str(c)).lower() for c in out_data.columns]
         out_data.value = pd.to_numeric(out_data.value)
         if datatype != 'ALL':
-            out_data.index = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(None)
+            out_data.index = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_localize(None)
             out_data.rename(columns={'time': 'time_orig'}, inplace=True)
         else:
-            out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_convert(None)
+            out_data.time = pd.DatetimeIndex(out_data.loc[:, 'time']).tz_localize(None)
         return out_data
 
 
@@ -452,9 +452,9 @@ class Tidal(object):
         # Interpolate and return the data
         y = adj_data.loc[:, 'value']
         t = adj_data.index
- 
         value = y.iloc[0] + (time_stamp - t[0]).total_seconds() * ((y.iloc[1] - y.iloc[0])/
                         (t[1] - t[0]).total_seconds())
+        print(f"Interpolating between {t[0]} ({y.iloc[0]}) and {t[1]} ({y.iloc[1]})")
         value = round(value) # Round of to nearest cm
         return(WaterLevelData(value, adj_data.iloc[0, adj_data.columns.get_loc('type')], refcode))
 
