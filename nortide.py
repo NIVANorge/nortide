@@ -32,13 +32,8 @@ import time
 import math
 from dateutil.parser import parse as dt_parse
 
-try:
-    basestring
-except:
-    basestring = str # Python3 compatibility
 
-
-api_url = "https://vannstand.kartverket.no/tideapi.php"
+API_URL = "https://vannstand.kartverket.no/tideapi.php"
 
 WaterLevelData = namedtuple('WaterLevelData', 'data, data_type, refcode')
 RefLevel = namedtuple('RefLevel', 'code, name, descr')
@@ -216,7 +211,7 @@ class Tidal(object):
                  ]
     
 
-    def __init__(self, url=api_url):
+    def __init__(self, url=API_URL):
         self.url = url
         self._stations = None
         self._languages = None
@@ -314,14 +309,14 @@ class Tidal(object):
             start_time = end_time - timedelta(1)
         
         # Note that the API assumes all queried times are in utc+1 time
-        if isinstance(start_time, basestring):
+        if isinstance(start_time, str):
             start_time = dt_parse(start_time)        
         # assert(isinstance(start_time, datetime))
         start_time = _ts_localize(start_time, tz_norway)
         # start_time.astimezone(tz_norway)
         start_time_str = start_time.isoformat()
         
-        if isinstance(end_time, basestring):
+        if isinstance(end_time, str):
             end_time = dt_parse(end_time)
         end_time = _ts_localize(end_time, tz_norway)
         # assert(isinstance(end_time, datetime))
@@ -418,7 +413,7 @@ class Tidal(object):
 
         Warning: if abused Kartverket will block your IP for a while...
         '''
-        if isinstance(time_stamp, basestring):
+        if isinstance(time_stamp, str):
             # Parse timestamp and convert to datetime object
             time_stamp = dt_parse(time_stamp)
         time_stamp = _ts_localize(time_stamp, tz_norway)
